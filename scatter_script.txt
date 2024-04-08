@@ -1,0 +1,131 @@
+LOAD_ROM_2 0x02000000
+{
+    EWRAM 0x02000000 0x40000
+    {
+        ewram.o (+RW)
+    }
+}
+LOAD_ROM_3 0x03000000
+{
+    IWRAM 0x03000000
+    {
+        iwram_start.o (+RW)
+    }
+    libspace_iwram 0x03000010
+    {
+        libspace.o(.bss)
+    }
+    iwram_end 0x03000090
+    {
+        iwram_end.o (+RW)
+    }
+}
+
+LOAD_ROM_1 0x08000000
+{
+    .text 0x08000000
+    {
+        crt0.o (+RO, +FIRST)
+    }
+
+    .text2 0x080002F4
+    {
+        split_sub_80002F4.o
+    }
+    .text3 0x08000560
+    {
+        split_sub_8000560.o
+    }
+    .text4 0x080005F4
+    {
+        split_sub_80005F4.o
+    }
+    .text5 0x08000608
+    {
+        split_sub_8000608.o
+    }
+    .text6 0x08000864
+    {
+        split_sub_8000864.o
+    }
+    rt_memclear 0x08000888
+    {
+        rt_memclr.o
+    }
+    rt_memclr_w 0x080008D0
+    {
+        rt_memclr_w.o
+    }
+    rt_memcpy 0x0800092C
+    {
+        rt_memcpy.o
+    }
+    strchr 0x080009E4
+    {
+        strchr.o
+    }
+    strcmp 0x08000A00
+    {
+        strcmp.o
+    }
+    strlen 0x08000AA4
+    {
+        strlen.o
+    }
+    strncpy 0x08000AF0
+    {
+        strncpy.o
+    }
+    kernel 0x08000B44
+    {
+        kernel.o
+    }
+    rt_memcpy_w 0x08000B94
+    {
+        rt_memcpy_w.o
+    }
+    exit 0x08000C04
+    {
+        exit.o
+    }
+    lib_init 0x08000C18
+    {
+        lib_init.o
+    }
+    stkheap1 0x08000CD0
+    {
+        stkheap1.o
+    }
+    sys_exit 0x08000DDC
+    {
+        sys_exit.o
+    }
+    libspace 0x08000DF8
+    {
+        libspace.o
+    }
+    use_semi 0x08000E08
+    {
+        use_semi.o
+    }
+    SoftReset 0x08000E10
+    {
+        split_SoftReset.o
+    }
+    .text14 0x08000E28
+    {
+        kernel.o(Veneer$$Code)
+    }
+    .text16 0x08000E40
+    {
+        split_sub_8000E40.o
+    }
+    .text17 0x08000E4C
+    {
+        fpinit.o(x$fpl$fpinit)
+    }
+    DATABLOCK 0x08000E54
+    {
+        data.o (+RW)
+    }
+}
