@@ -1,65 +1,43 @@
-    INCLUDE asm/macros.inc
-    AREA text, CODE
+     INCLUDE asm/macros.inc
+     AREA text, CODE
+ 	IMPORT sub_80006B8
+ 	IMPORT sub_80007B4
+ 	IMPORT __16__rt_memclr_w
+ 	IMPORT __16__rt_memcpy
+ 	IMPORT __16strcmp
+ 	IMPORT strchr
+ 	IMPORT strlen
+ 	IMPORT strncpy
+ 	IMPORT sub_80007FC
+ 	IMPORT sub_8000810
+ 	IMPORT safe_memcpy
+ 	IMPORT sub_800087E
+ 	IMPORT strToLower
 
-	IMPORT sub_80006B8
-	IMPORT sub_80007B4
-	IMPORT __16__rt_memclr_w
-	IMPORT __16__rt_memcpy
-	IMPORT __16strcmp
-	IMPORT strchr
-	IMPORT strlen
-	IMPORT strncpy
-	IMPORT sub_80007FC
-	IMPORT sub_8000810
-	IMPORT sub_8000864
-	IMPORT sub_800087E
-
-	thumb_func_start sub_80002F4
-sub_80002F4 ;@ 0x080002F4
-	ldrb r1, [r0]
-	cmp r1, #0
-	beq _08000312
-_080002FA
-	movs r3, #0
-	ldrsb r1, [r0, r3]
-	adds r2, r1, #0
-	subs r2, #0x41
-	cmp r2, #0x19
-	bhi _0800030A
-	adds r1, #0x20
-	strb r1, [r0]
-_0800030A
-	adds r0, #1
-	ldrb r1, [r0]
-	cmp r1, #0
-	bne _080002FA
-_08000312
-	bx lr
-
-	thumb_func_start sub_8000314
-sub_8000314 ;@ 0x08000314
-	adds r0, r1, #0
+       thumb_func_start SFCDHeader
+SFCDHeader ;@ 0x08000314
+    adds r0, r1, #0
 _08000316
-	ldrb r1, [r0]
-	cmp r1, #0x53
-	bne _0800032E
-	ldrb r1, [r0, #1]
-	cmp r1, #0x46
-	bne _0800032E
-	ldrb r1, [r0, #2]
-	cmp r1, #0x43
-	bne _0800032E
-	ldrb r1, [r0, #3]
-	cmp r1, #0x44
-	beq _08000338
+    ldrb r1, [r0]
+    cmp r1, #0x53
+    bne _0800032E
+    ldrb r1, [r0, #1]
+    cmp r1, #0x46
+    bne _0800032E
+    ldrb r1, [r0, #2]
+    cmp r1, #0x43
+    bne _0800032E
+    ldrb r1, [r0, #3]
+    cmp r1, #0x44
+    beq _08000338
 _0800032E
-	adds r0, #4
-	subs r2, #4
-	cmp r2, #0
-	bgt _08000316
-	movs r0, #0
+    adds r0, #4
+    subs r2, #4
+    cmp r2, #0
+    bgt _08000316
+    movs r0, #0
 _08000338
-	bx lr
+    bx lr
 
 	non_word_aligned_thumb_func_start sub_800033A
 sub_800033A ;@ 0x0800033A
@@ -87,7 +65,7 @@ _08000360
 	movs r2, #0
 	adds r1, r5, #0
 	adds r0, r4, #0
-	bl sub_8000864
+	bl safe_memcpy
 	adds r6, r0, #0
 	adds r1, r5, #0
 	adds r0, r4, #0
@@ -138,7 +116,7 @@ _080003AC
 	adds r0, r4, r5
 	movs r2, #0
 	movs r1, #8
-	bl sub_8000864
+	bl safe_memcpy
 	adds r1, r0, #0
 	movs r0, #8
 	subs r2, r0, r5
@@ -174,7 +152,7 @@ _0800040C
 	movs r2, #0
 	adds r1, r4, #0
 	adds r0, r6, #0
-	bl sub_8000864
+	bl safe_memcpy
 	str r0, [sp, #4]
 	adds r1, r4, #0
 	adds r0, r6, #0
@@ -193,7 +171,6 @@ _0800040C
 	bgt _0800040C
 	adds r0, r7, #0
 	b _0800034E
-
 	non_word_aligned_thumb_func_start sub_800043E
 sub_800043E ;@ 0x0800043E
 	push {r4, r5, r6, lr}
@@ -215,7 +192,6 @@ _08000460
 	pop {r4, r5, r6}
 	pop {r3}
 	bx r3
-
 	non_word_aligned_thumb_func_start sub_8000466
 sub_8000466 ;@ 0x08000466
 	push {r0, r1, r2, r4, r5, r6, r7, lr}
@@ -252,7 +228,7 @@ _080004A2
 	adds r0, r6, #0
 	bl strncpy
 	adds r0, r6, #0
-	bl sub_80002F4
+	bl strToLower
 _080004B4
 	ldm r5!, {r0}
 	lsls r6, r0, #0x10
@@ -312,7 +288,6 @@ _08000504
 _0800051C
 	movs r0, #0
 	b _080004E4
-
 	thumb_func_start sub_8000520
 sub_8000520 ;@ 0x08000520
 	push {r4, lr}
@@ -332,7 +307,6 @@ _08000534
 	lsrs r0, r0, #3
 	adds r0, r1, r0
 	b _0800052E
-
 	thumb_func_start sub_8000540
 sub_8000540 ;@ 0x08000540
 	push {r3, lr}

@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "gba.h": "c",
+        "io_reg.h": "c",
+        "cstddef": "c"
+    }
+}

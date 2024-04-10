@@ -2,8 +2,8 @@
     AREA text, CODE
 
 
-	thumb_func_start sub_80005F4
-sub_80005F4 ;@ 0x080005F4
+	thumb_func_start __user_initial_stackheap
+__user_initial_stackheap ;@ 0x080005F4
 	push {r7}
 	pop {r7}
 	ldr r1, _08000600 ;@ =0x03007F00

@@ -16,7 +16,7 @@ SCANINC := tools/scaninc/scaninc.exe
 PREPROC := tools/preproc/preproc.exe
 GBAFIX := tools/gbafix/gbafix.exe
 
-CC1FLAGS := -Wi -Wp -Wb -O2 -Otime -S -g -apcs "/interwork"
+CC1FLAGS := -Wi -Wp -Wb -O2 -Otime -S -g -apcs "/interwork" -fpu none
 CPPFLAGS := -I tools/agbcc/include -iquote include -nostdinc -undef -D VERSION_$(GAME_VERSION) -D REVISION=$(GAME_REVISION) -D $(GAME_REGION) -D DEBUG=$(DEBUG)
 ASFLAGS  := -CPU arm7tdmi -LIttleend -fpu none -apcs "/interwork" -I asminclude -I include
 
@@ -37,6 +37,8 @@ NODEP := 0
 #endif
 
 C_SUBDIR = src
+THUMB_SUBDIR = src/thumb
+ARM_SUBDIR = src/arm
 C_DATA_SUBDIR = src/data
 SRC_ASM_SUBDIR = src
 ASM_SUBDIR = asm
@@ -49,7 +51,8 @@ WAVE_ASM_SUBDIR = sound/wave
 PARTIAL_DECOMP_SUBDIR = partial
 MERGED_SUBDIR = merged
 
-C_BUILDDIR = $(OBJ_DIR)/$(C_SUBDIR)
+THUMB_BUILDDIR = $(OBJ_DIR)/$(C_SUBDIR)/thumb/
+ARM_BUILDDIR = $(OBJ_DIR)/$(C_SUBDIR)/arm/
 C_DATA_BUILDDIR = $(OBJ_DIR)/$(C_DATA_SUBDIR)
 SRC_ASM_BUILDDIR = $(OBJ_DIR)/$(C_SUBDIR)
 ASM_BUILDDIR = $(OBJ_DIR)/$(ASM_SUBDIR)
@@ -62,15 +65,13 @@ WAVE_ASM_BUILDDIR = $(OBJ_DIR)/$(WAVE_ASM_SUBDIR)
 PARTIAL_DECOMP_BUILDDIR = $(OBJ_DIR)/$(PARTIAL_DECOMP_SUBDIR)
 MERGED_BUILDDIR = $(OBJ_DIR)/$(MERGED_SUBDIR)
 
-#$(shell mkdir -p $(C_BUILDDIR) $(C_DATA_BUILDDIR) $(SRC_ASM_BUILDDIR) $(ASM_BUILDDIR) $(DATA_ASM_BUILDDIR) $(RODATA_ASM_BUILDDIR) $(SOUND_ASM_BUILDDIR) $(BANK_ASM_BUILDDIR) $(SEQ_ASM_BUILDDIR) $(WAVE_ASM_BUILDDIR))
+THUMB_SRCS_IN := $(wildcard $(THUMB_SUBDIR)/*.c $(THUMB_SUBDIR)/*/*.c $(THUMB_SUBDIR)/*/*/*.c $(THUMB_SUBDIR)/*/*/*/*.c)
+THUMB_SRCS := $(foreach src,$(THUMB_SRCS_IN),$(if $(findstring .inc.c,$(src)),,$(src)))
+THUMB_OBJS := $(patsubst $(THUMB_SUBDIR)/%.c,$(THUMB_BUILDDIR)/%.o,$(THUMB_SRCS))
 
-C_SRCS_IN := $(wildcard $(C_SUBDIR)/*.c $(C_SUBDIR)/*/*.c $(C_SUBDIR)/*/*/*.c $(C_SUBDIR)/*/*/*/*.c)
-C_SRCS := $(foreach src,$(C_SRCS_IN),$(if $(findstring .inc.c,$(src)),,$(src)))
-#C_SRCS := $(wildcard $(C_SUBDIR)/*.c)
-C_OBJS := $(patsubst $(C_SUBDIR)/%.c,$(C_BUILDDIR)/%.o,$(C_SRCS))
-
-SRC_ASM_SRCS := $(wildcard $(C_SUBDIR)/*.s $(C_SUBDIR)/*/*.s $(C_SUBDIR)/*/*/*.s)
-SRC_ASM_OBJS := $(patsubst $(C_SUBDIR)/%.s,$(SRC_ASM_BUILDDIR)/%.o,$(SRC_ASM_SRCS))
+ARM_SRCS_IN := $(wildcard $(ARM_SUBDIR)/*.c $(ARM_SUBDIR)/*/*.c $(ARM_SUBDIR)/*/*/*.c $(ARM_SUBDIR)/*/*/*/*.c)
+ARM_SRCS := $(foreach src,$(ARM_SRCS_IN),$(if $(findstring .inc.c,$(src)),,$(src)))
+ARM_OBJS := $(patsubst $(ARM_SUBDIR)/%.c,$(ARM_BUILDDIR)/%.o,$(ARM_SRCS))
 
 ASM_SRCS := $(wildcard $(ASM_SUBDIR)/*.s $(ASM_SUBDIR)/*/*.s $(ASM_SUBDIR)/*/*/*.s)
 ASM_OBJS := $(patsubst $(ASM_SUBDIR)/%.s,$(ASM_BUILDDIR)/%.o,$(ASM_SRCS))
@@ -101,7 +102,7 @@ MERGED_ASM_OBJS := $(patsubst $(PARTIAL_DECOMP_SUBDIR)/%.yml,$(MERGED_BUILDDIR)/
 PYTHON := python # or just python, depending on your setup
 MERGE_SCRIPT := scripts/merge_partial_c.py
 
-OBJS := $(C_OBJS) $(C_DATA_OBJS) $(SRC_ASM_OBJS) $(ASM_OBJS) $(SOUND_ASM_OBJS) $(BANK_ASM_OBJS) $(SEQ_ASM_OBJS) $(WAVE_ASM_OBJS) $(DATA_ASM_OBJS) $(RODATA_ASM_OBJS) $(MERGED_ASM_OBJS)
+OBJS := $(THUMB_OBJS) $(ARM_OBJS) $(C_DATA_OBJS) $(ASM_OBJS) $(SOUND_ASM_OBJS) $(BANK_ASM_OBJS) $(SEQ_ASM_OBJS) $(WAVE_ASM_OBJS) $(DATA_ASM_OBJS) $(RODATA_ASM_OBJS) $(MERGED_ASM_OBJS)
 OBJS_REL := $(patsubst $(OBJ_DIR)/%,%,$(OBJS))
 
 SUBDIRS  := $(sort $(dir $(OBJS)))
@@ -162,9 +163,15 @@ include graphics_file_rules.mk
 
 #### Dependencies ####
 ifeq ($(NODEP),1)
-$(C_BUILDDIR)/%.o: c_dep :=
+$(ARM_BUILDDIR)/%.o: arm_dep :=
 else
-$(C_BUILDDIR)/%.o: c_dep = $(shell $(SCANINC) -I include $(C_SUBDIR)/$*.c)
+$(ARM_BUILDDIR)/%.o: arm_dep = $(shell $(SCANINC) -I include $(ARM_SUBDIR)/$*.c)
+endif
+
+ifeq ($(NODEP),1)
+$(THUMB_BUILDDIR)/%.o: thumb_dep :=
+else
+$(THUMB_BUILDDIR)/%.o: thumb_dep = $(shell $(SCANINC) -I include $(THUMB_SUBDIR)/$*.c)
 endif
 
 ifeq ($(NODEP),1)
@@ -187,12 +194,13 @@ endif
 
 #### Recipes ####
 
-$(C_BUILDDIR)/%.o : $(C_SUBDIR)/%.c $$(c_dep)
-	$(TCC) $(CC1FLAGS) -I include -o $(C_BUILDDIR)/$*.s $<
-	$(AS) $(ASFLAGS) -o $@ $(C_BUILDDIR)/$*.s
+$(ARM_BUILDDIR)/%.o : $(ARM_SUBDIR)/%.c $$(c_dep)
+	$(ACC) $(CC1FLAGS) -I include -o $(ARM_BUILDDIR)/$*.s $<
+	$(AS) $(ASFLAGS) -o $@ $(ARM_BUILDDIR)/$*.s
 
-$(SRC_ASM_BUILDDIR)/%.o: $(C_SUBDIR)/%.s
-	$(AS) $(ASFLAGS) -o $@ $<
+$(THUMB_BUILDDIR)/%.o : $(THUMB_SUBDIR)/%.c $$(c_dep)
+	$(TCC) $(CC1FLAGS) -I include -o $(THUMB_BUILDDIR)/$*.s $<
+	$(AS) $(ASFLAGS) -o $@ $(THUMB_BUILDDIR)/$*.s
 
 $(MERGED_BUILDDIR)/%.o: $(MERGED_BUILDDIR)/%.s
 	$(AS) $(ASFLAGS) -o $@ $<

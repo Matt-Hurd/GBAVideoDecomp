@@ -1,0 +1,10 @@
+	AREA data, DATA
+
+    GLOBAL DMA_GAP
+DMA_GAP
+    SPACE 0xD4
+
+    GLOBAL REG_DMA3
+REG_DMA3
+    SPACE 0x10
+    END

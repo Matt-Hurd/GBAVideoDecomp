@@ -1,6 +1,14 @@
 	AREA data, DATA
 
-	GLOBAL iwram_end
-iwram_end
-	SPACE 0x7F70
+	GLOBAL gUnknown03000090
+gUnknown03000090
+	SPACE 0x7F50
+
+	GLOBAL gUnknown03007FE0
+gUnknown03007FE0
+	SPACE 0x10
+
+	GLOBAL gUnknown03007FF0
+gUnknown03007FF0
+	SPACE 0x10
 	END

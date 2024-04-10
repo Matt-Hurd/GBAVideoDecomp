@@ -20,25 +20,36 @@ LOAD_ROM_3 0x03000000
         iwram_end.o (+RW)
     }
 }
+LOAD_ROM_4 0x04000000
+{
+    IO 0x04000000
+    {
+        io.o (+RW)
+    }
+}
 
 LOAD_ROM_1 0x08000000
 {
     .text 0x08000000
     {
-        crt0.o (+RO, +FIRST)
+        crt0.o (+RO, +ENTRY)
     }
 
-    .text2 0x080002F4
+    strToLower 0x080002F4
     {
-        split_sub_80002F4.o
+        strToLower.o
+    }
+    SFCD 0x08000314
+    {
+        sfcd.o
     }
     .text3 0x08000560
     {
-        split_sub_8000560.o
+        main.o
     }
     .text4 0x080005F4
     {
-        split_sub_80005F4.o
+        __user_initial_stackheap.o
     }
     .text5 0x08000608
     {
@@ -46,7 +57,15 @@ LOAD_ROM_1 0x08000000
     }
     .text6 0x08000864
     {
-        split_sub_8000864.o
+        safe_memcpy.o
+    }
+    split_fp_init 0x0800087C
+    {
+        split_fp_init.o
+    }
+    _no_redirect.o 0x08000884
+    {
+        _no_redirect.o
     }
     rt_memclear 0x08000888
     {
@@ -110,15 +129,11 @@ LOAD_ROM_1 0x08000000
     }
     SoftReset 0x08000E10
     {
-        split_SoftReset.o
+        SoftReset.o
     }
     .text14 0x08000E28
     {
         kernel.o(Veneer$$Code)
-    }
-    .text16 0x08000E40
-    {
-        split_sub_8000E40.o
     }
     .text17 0x08000E4C
     {
