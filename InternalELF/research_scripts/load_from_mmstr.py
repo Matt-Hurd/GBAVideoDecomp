@@ -205,7 +205,7 @@ def extract_mmstr_archive(archive_path, read_filenames=True):
         
     print(f"Extraction completed. Files are located in '{directory_name}'.")
 
-extract_mmstr_archive("menuresources.mmstr", True)
+extract_mmstr_archive("commonresources.mmstr", True)
 
 # in_file = open("jingle.mmstr", "rb")
 # data = in_file.read()
